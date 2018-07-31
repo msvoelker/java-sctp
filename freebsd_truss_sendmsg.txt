@@ -1,0 +1,35 @@
+sendmsg(7,{0x7fffdfffd5d0,0,[{"4:48:53 PM Fri 16 Mar 18, Centra"...,47}],1,{{level=IPPROTO_SCTP,type=SCTP_SNDRCV,data={sid=0,flgs=0,ppid=0,ctx=0,ttl=0,id=0}}},144,0},0) ERR#22 'Invalid argument'
+
+sendmsg({
+	s=7,
+	msg={
+		msg_name=0x7fffdfffd5d0,
+		msg_namelen=0,
+		msg_iov=[{
+			iov_base="4:48:53 PM Fri 16 Mar 18, Centra"...,
+			iov_len=47
+		}],
+		msg_iovlen=1,
+		msg_control={
+			{
+				cmsg_len=?
+				cmsg_level=IPPROTO_SCTP,
+				cmsg_type=SCTP_SNDRCV,
+				cmsg_data={
+					sinfo_stream=0,
+					sinfo_ssn=?
+					sinfo_flags=0,
+					sinfo_ppid=0,
+					sinfo_context=0,
+					sinfo_timetolive=0,
+					sinfo_tsn=?
+					sinfo_cumtsn=?
+					sinfo_assoc_id=0
+				}
+			}
+		},
+		msg_controllen=144,
+		msg_flags=0
+	},
+	flags=0
+}) ERR#22 'Invalid argument'

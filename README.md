@@ -40,7 +40,7 @@ For my next test, I used a FreeBSD 12.0-CURRENT amd64 VM. As with Ubuntu, I inst
 % javac DaytimeClient.java DaytimeServer.java 
 ```
 
-Unfortunately, running the example on FreeBSD was not that successful.
+Unfortunately, running the example on FreeBSD was not that successful (see [freebsd.pcap](freebsd.pcap) for a network packet trace).
 
 ```
 % java DaytimeServer &
@@ -72,4 +72,27 @@ sendmsg(7,0x7fffdfffd600,0)			 ERR#22 'Invalid argument'
 ...
 ```
 
-Since OpenJDK seems to do not support SCTP on FreeBSD, I did not further investigate this issue.
+Since OpenJDK seems to do not support SCTP on FreeBSD, this is somehow OK. However, I further investigate this issue. In the sendmsg call, a buffer address and a buffer length 0 is passed. This is OK for Linux, but it is an invalid argument for FreeBSD (buffer address needs to be NULL, if buffer length is 0). In OpenJDK8, I found the code lines in function Java_sun_nio_ch_sctp_SctpChannelImpl_send0 of 
+
+jdk/src/solaris/native/sun/nio/ch/sctp/SctpChannelImpl.c
+
+In this file I found two ifdef OS statements that I fixed for FreeBSD as well. I created the patch file patch-jdk-src-solaris-native-sun-nio-ch-sctp-SctpChannelImpl.c and used the FreeBSD ports collection to install OpenJDK8 with this patch.
+
+```
+% sudo pkg remove openjdk8
+% sudo cp patch-jdk-src-solaris-native-sun-nio-ch-sctp-SctpChannelImpl.c /usr/ports/java/openjdk8/files
+% cd /usr/ports/java/openjdk8
+% sudo make install
+```
+
+After that I recompiled my java test files and run it again (see [freebsd-patched.pcap](freebsd-patched.pcap) for a network packet trace).
+
+```
+$ javac DaytimeClient.java DaytimeServer.java 
+$ java DaytimeServer &
+$ java DaytimeClient
+New association setup with 10 outbound streams, and 10 inbound streams.
+(US) 2:56:42 PM Tue 31 Jul 18, Central European Summer Time
+(FR) 2:56:42 PM mar. 31 juil. 18, Heure d'?t? d'Europe centrale
+The association has been shutdown.
+```
